@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turn Opinions into Payday</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* আপনার existing CSS styles */
+        * {
+            box-sizing: border-box;
+        }
+
+        :root {
+            --background-color: #FFFFFF;
+            --form-background: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #555555;
+            --border-color: #CCCCCC;
+            --button-background: #4a5568;
+            --button-text: #FFFFFF;
+            --placeholder-color: #AAAAAA;
+            --link-color: #007bff;
+            --error-color: #dc3545;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            min-height: 100vh;
+            max-height: 98vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 40px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            background-color: var(--form-background);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section {
+            width: 100%;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .section.active {
+            display: flex;
+        }
+
+        #landing-page .art-design-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 200px;
+            max-height: 40%;
+            margin-bottom: 2rem;
+        }
+
+        .art-design-svg {
+            width: 80%;
+            max-width: 280px;
+            height: auto;
+            overflow: visible;
+        }
+
+        #landing-page h1 {
+            font-size: clamp(1.8rem, 8vw, 2.5rem); 
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0 0 2rem 0;
+            flex-shrink: 0;
+        }
+
+        #landing-page .buttons-wrapper {
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .main-button {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--button-text);
+            background-color: var(--button-background);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .main-button:hover {
+            background-color: #2d3748;
+        }
+
+        .secondary-button {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .secondary-button:hover {
+            background-color: #f0f0f0;
+            border-color: #a0a0a0;
+        }
+
+        .form-header {
+            margin-bottom: 2.5rem;
+            flex-shrink: 0;
+        }
+
+        .form-header h1 {
+            font-size: 2.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 0.5rem;
+        }
+
+        .form-header p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        
+        ::placeholder {
+            color: var(--placeholder-color);
+            opacity: 1;
+        }
+
+        .divider {
+            margin: 1.5rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .social-icon:hover {
+            background-color: #f7f7f7;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.95rem;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--button-background);
+            color: var(--button-text);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            flex-shrink: 0;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .switch-form {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .switch-form a {
+            color: var(--link-color);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+
+            .app-container {
+                border-radius: 20px;
+                padding: 0;
+                max-height: 100vh;
+                box-shadow: none;
+            }
+
+            .section {
+                padding: 1.5rem 1rem;
+            }
+
+            #landing-page h1 {
+                font-size: clamp(1.6rem, 7vw, 2.2rem);
+            }
+
+            .form-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .form-header p {
+                font-size: 0.85rem;
+            }
+
+            .social-icon {
+                width: 45px;
+                height: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="app-container">
+
+        <!-- Landing Page Section -->
+        <div class="section active" id="landing-page">
+            <div class="art-design-container">
+                <svg class="art-design-svg" viewBox="0 0 300 200">
+                    <!-- Winding Black Line -->
+                    <path d="M50,50 C100,0 200,150 250,100" stroke="black" stroke-width="4" fill="none" />
+
+                    <!-- Multi-colored Arc -->
+                    <path d="M40,42 C70,12 110,12 140,42" stroke="#FF6347" stroke-width="6" fill="none" stroke-linecap="round" />
+                    <path d="M110,19 C140,-1 180,-1 200,19" stroke="#8A2BE2" stroke-width="6" fill="none" stroke-linecap="round" transform="rotate(20, 150, 50)" />
+                    
+                    <!-- Camera Symbol -->
+                    <g transform="translate(40, 90)">
+                        <rect x="0" y="0" width="60" height="40" rx="8" fill="#FFC107" />
+                        <circle cx="30" cy="20" r="10" fill="white" />
+                        <circle cx="10" cy="10" r="3" fill="white" />
+                        <!-- Flash symbols -->
+                        <rect x="65" y="5" width="4" height="10" fill="#FFC107" transform="rotate(15, 67, 10)" />
+                        <rect x="75" y="15" width="10" height="4" fill="#FFC107" />
+                    </g>
+
+                    <!-- Speech Bubble Symbol -->
+                    <g transform="translate(180, 20)">
+                        <path d="M0,0 H60 V40 H20 L10,50 L10,40 H0 Z" fill="#2E8B57" rx="8" />
+                    </g>
+                    
+                    <!-- Money Stack Symbol -->
+                    <g transform="translate(150, 130)">
+                        <path d="M0 15 L30 0 L80 0 L50 15 Z" fill="#1E90FF"/>
+                        <path d="M0 15 L0 30 L50 30 L50 15 Z" fill="#1E90FF"/>
+                        <path d="M50 15 L50 30 L80 15 L80 0 Z" fill="#4169E1"/>
+                        <!-- White details -->
+                        <rect x="35" y="3" width="10" height="8" fill="white" />
+                        <rect x="5" y="18" width="40" height="3" fill="#6495ED" />
+                        <rect x="5" y="24" width="40" height="3" fill="#6495ED" />
+                    </g>
+                </svg>
+            </div>
+
+            <div class="buttons-wrapper">
+                <h1>Turn your opinions and discoveries into a payday</h1>
+                <button class="main-button" id="show-signup-landing">Sign up</button>
+                <button class="secondary-button" id="show-login-landing">Log in</button>
+            </div>
+        </div>
+
+        <!-- Sign Up Form Section -->
+        <div class="section" id="signup-form-section">
+            <div class="form-header">
+                <h1>Welcome!</h1>
+                <p>Sign up to get started.</p>
+            </div>
+            <div class="input-group">
+                <label for="signup-username">Username</label>
+                <input type="text" id="signup-username" placeholder="Enter your username">
+            </div>
+            <div class="input-group">
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" placeholder="Enter your email address">
+            </div>
+            <div class="input-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" placeholder="Create a password">
+            </div>
+            <p class="error-message" id="signup-error-message"></p>
+            <div class="divider">or</div>
+            <div class="social-login">
+                <div class="social-icon"><i class="fab fa-facebook-f"></i></div>
+                <div class="social-icon"><i class="fab fa-google"></i></div>
+                <div class="social-icon"><i class="fab fa-twitter"></i></div>
+            </div>
+            <button type="submit" class="btn" id="signup-btn">Sign Up</button>
+            <div class="switch-form">
+                Already have an account? <a id="show-login">Log in</a>
+            </div>
+        </div>
+
+        <!-- Log In Form Section -->
+        <div class="section" id="login-form-section">
+            <div class="form-header">
+                <h1>Good to see you!</h1>
+                <p>Let's continue the journey.</p>
+            </div>
+            <div class="input-group">
+                <label for="login-email">Email</label>
+                <input type="email" id="login-email" placeholder="Enter your email address">
+            </div>
+            <div class="input-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="Enter your password">
+            </div>
+            <p class="error-message" id="login-error-message"></p>
+            <div class="divider">or</div>
+            <div class="social-login">
+                <div class="social-icon"><i class="fab fa-facebook-f"></i></div>
+                <div class="social-icon"><i class="fab fa-google"></i></div>
+                <div class="social-icon"><i class="fab fa-twitter"></i></div>
+            </div>
+            <button type="submit" class="btn" id="login-btn">Log In</button>
+            <div class="switch-form">
+                Don't have an account? <a id="show-signup">Sign Up</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbxp2dGCS4BZ1qlj7dPr4BRvQogIYVCcY",
+            authDomain: "survey-io-76104.firebaseapp.com",
+            databaseURL: "https://survey-io-76104-default-rtdb.firebaseio.com",
+            projectId: "survey-io-76104",
+            storageBucket: "survey-io-76104.firebasestorage.app",
+            messagingSenderId: "788956564253",
+            appId: "1:788956564253:web:8eefa99bb1e5be8b67aff4",
+            measurementId: "G-Z64B52QJS6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // --- UI Element References ---
+        const landingPage = document.getElementById('landing-page');
+        const signupFormSection = document.getElementById('signup-form-section');
+        const loginFormSection = document.getElementById('login-form-section');
+
+        const showSignupLandingBtn = document.getElementById('show-signup-landing');
+        const showLoginLandingBtn = document.getElementById('show-login-landing');
+
+        const showLoginLink = document.getElementById('show-login');
+        const showSignupLink = document.getElementById('show-signup');
+
+        const signupUsernameInput = document.getElementById('signup-username');
+        const signupEmailInput = document.getElementById('signup-email');
+        const signupPasswordInput = document.getElementById('signup-password');
+        const signupBtn = document.getElementById('signup-btn');
+        const signupErrorMessage = document.getElementById('signup-error-message');
+
+        const loginEmailInput = document.getElementById('login-email');
+        const loginPasswordInput = document.getElementById('login-password');
+        const loginBtn = document.getElementById('login-btn');
+        const loginErrorMessage = document.getElementById('login-error-message');
+
+        // --- Helper Functions ---
+        function showSection(sectionToShow) {
+            landingPage.classList.remove('active');
+            signupFormSection.classList.remove('active');
+            loginFormSection.classList.remove('active');
+            sectionToShow.classList.add('active');
+            signupErrorMessage.style.display = 'none';
+            loginErrorMessage.style.display = 'none';
+        }
+
+        function displayError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+
+        // --- NEW FUNCTION: Redirect to Task Marketplace ---
+        function redirectToTaskMarketplace(user) {
+            // Store user data in localStorage for the task marketplace
+            localStorage.setItem('currentUser', JSON.stringify({
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || user.email
+            }));
+            
+            // Redirect to the task marketplace page
+            window.location.href = 'task-marketplace.html';
+        }
+
+        // --- Event Listeners for UI Navigation ---
+        showSignupLandingBtn.addEventListener('click', () => showSection(signupFormSection));
+        showLoginLandingBtn.addEventListener('click', () => showSection(loginFormSection));
+        showLoginLink.addEventListener('click', () => showSection(loginFormSection));
+        showSignupLink.addEventListener('click', () => showSection(signupFormSection));
+
+        // --- Firebase Authentication Logic ---
+
+        // Signup Functionality
+        signupBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            signupErrorMessage.style.display = 'none';
+
+            const username = signupUsernameInput.value.trim();
+            const email = signupEmailInput.value.trim();
+            const password = signupPasswordInput.value.trim();
+
+            if (!username || !email || !password) {
+                displayError(signupErrorMessage, "Please fill in all fields (username, email, password).");
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                await updateProfile(user, {
+                    displayName: username
+                });
+
+                console.log("User signed up:", user.email, "Username:", user.displayName);
+                alert(`Sign up successful! Welcome, ${user.displayName}. You can now log in.`);
+                showSection(loginFormSection);
+            } catch (error) {
+                console.error("Signup error:", error.code, error.message);
+                let errorMessage = "An unknown error occurred during signup.";
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = "This email is already in use. Try logging in.";
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = "Invalid email address format.";
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = "Password should be at least 6 characters.";
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                displayError(signupErrorMessage, errorMessage);
+            }
+        });
+
+        // Login Functionality - UPDATED with redirect
+        loginBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            loginErrorMessage.style.display = 'none';
+
+            const email = loginEmailInput.value.trim();
+            const password = loginPasswordInput.value.trim();
+
+            if (!email || !password) {
+                displayError(loginErrorMessage, "Please enter both email and password.");
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const userDisplayName = user.displayName || user.email;
+
+                console.log("User logged in:", user.email, "Display Name:", user.displayName);
+                
+                // Show success message and redirect
+                alert(`Login successful! Welcome back, ${userDisplayName}. Redirecting to dashboard...`);
+                
+                // Redirect to task marketplace
+                redirectToTaskMarketplace(user);
+                
+            } catch (error) {
+                console.error("Login error:", error.code, error.message);
+                let errorMessage = "An unknown error occurred during login.";
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        errorMessage = "Invalid email address.";
+                        break;
+                    case 'auth/user-disabled':
+                        errorMessage = "Your account has been disabled.";
+                        break;
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password': 
+                        errorMessage = "Invalid email or password.";
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                displayError(loginErrorMessage, errorMessage);
+            }
+        });
+    </script>
+</body>
+</html>
