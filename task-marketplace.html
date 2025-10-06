@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Marketplace</title>
+    <style>
+        /* --- Core Styles & Variables --- */
+        :root {
+            --primary-color: #ff4500;
+            --dark-blue: #1a237e;
+            --light-gray: #f5f7fa;
+            --border-color: #e0e4e8;
+            --dark-blue-gray: #455a64;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --card-padding: 1.25rem;
+            --card-radius: 12px;
+            --button-radius: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            background-color: var(--light-gray);
+            color: var(--text-primary);
+        }
+
+        .app-container {
+            max-width: 420px;
+            margin: auto;
+            background-color: #fff;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 70px;
+        }
+
+        /* --- Page Structure --- */
+        .page { display: none; padding: 1rem; }
+        .page.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- Header & Search Bar --- */
+        .page-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #fff; border-bottom: 1px solid var(--border-color); gap: 1rem; }
+        .search-container { flex-grow: 1; position: relative; }
+        #task-search-input { width: 100%; box-sizing: border-box; padding: 0.6rem 1rem 0.6rem 2.5rem; border: 1px solid var(--border-color); border-radius: 20px; font-size: 1rem; background-color: var(--light-gray); transition: all 0.2s ease; }
+        #task-search-input:focus { outline: none; border-color: var(--primary-color); background-color: #fff; box-shadow: 0 0 0 3px rgba(255, 69, 0, 0.1); }
+        .search-icon { position: absolute; top: 50%; left: 0.8rem; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-secondary); }
+        .balance-display { background-color: #000; color: #fff; padding: 0.5rem 1rem; border-radius: 20px; font-weight: bold; font-size: 0.9rem; flex-shrink: 0; }
+        
+        /* --- Animated App Title --- */
+        .app-title-animated {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary-color) 20%, var(--text-primary) 40%, var(--text-primary) 60%, var(--primary-color) 80%);
+            background-size: 200% auto;
+            color: transparent;
+            background-clip: text;
+            -webkit-background-clip: text;
+            animation: shimmer-effect 4s linear infinite;
+        }
+        @keyframes shimmer-effect {
+            to {
+                background-position: -200% center;
+            }
+        }
+
+        /* --- Task Cards --- */
+        .task-list { padding: 1rem; }
+        #no-tasks-found { text-align: center; color: var(--text-secondary); padding: 2rem; }
+        .task-card { background-color: #fff; border: 1px solid var(--border-color); border-radius: var(--card-radius); padding: var(--card-padding); margin-bottom: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: pointer; }
+        .task-card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+        .task-card.completed { opacity: 0.6; background-color: #fafafa; }
+        .task-card-header h3 { margin: 0; font-size: 1.5rem; color: var(--primary-color); font-weight: 600; }
+        .task-title { font-weight: 600; font-size: 1.25rem; margin: 0.75rem 0; line-height: 1.4; }
+        .task-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .task-timer-status { font-size: 1rem; font-weight: 600; }
+        .task-submission-box { margin-top: 1rem; }
+        .task-submission-box input { width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: var(--button-radius); padding: 0.75rem; font-size: 1rem; margin-bottom: 0.5rem;}
+        .task-submission-box button { width: 100%; padding: 0.75rem; border: none; background-color: #28a745; color: white; border-radius: var(--button-radius); cursor: pointer; font-size: 1rem; font-weight: 500;}
+
+        /* --- Wallet Page --- */
+        .wallet-card { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 1.5rem; border-radius: 16px; box-shadow: 0 10px 25px rgba(30, 60, 114, 0.3); position: relative; overflow: hidden; }
+        .wallet-header { display: flex; justify-content: space-between; align-items: center; }
+        .wallet-chip { width: 50px; height: 40px; background: #ffca28; border-radius: 6px; }
+        .wallet-status { font-size: 0.8rem; font-weight: bold; background: rgba(255,255,255,0.15); padding: 0.4rem 0.8rem; border-radius: 20px; transition: all 0.3s ease; }
+        .wallet-status.active { background-color: #4caf50; box-shadow: 0 0 12px #4caf50; animation: glow 1.5s infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 6px #4caf50; } to { box-shadow: 0 0 16px #66bb6a; } }
+        .wallet-balance-label { margin-top: 1rem; font-size: 1rem; opacity: 0.8; }
+        #wallet-balance { font-size: 3.2rem; font-weight: 600; letter-spacing: 1px; }
+        .cash-out-btn { width: 100%; padding: 1rem; border: none; background-color: #e0e0e0; color: #aaa; border-radius: var(--button-radius); font-size: 1.1rem; font-weight: bold; margin-top: 1rem; cursor: not-allowed; transition: background-color 0.3s; }
+        .cash-out-btn:enabled { background: linear-gradient(to right, #d32f2f, #e53935); color: white; cursor: pointer; }
+
+        /* --- Account Page (Accordion & Profile Edit) --- */
+        .accordion-card { background: white; border: 1px solid var(--border-color); border-radius: var(--card-radius); margin-bottom: 1rem; transition: box-shadow 0.2s; overflow: hidden; }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: var(--card-padding); cursor: pointer; }
+        .accordion-header h4 { margin: 0; font-size: 1.1rem; }
+        .arrow-icon { transform: rotate(0deg); transition: transform 0.3s ease; }
+        .accordion-header.active .arrow-icon { transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-out; padding: 0 var(--card-padding); }
+        .accordion-content.show { max-height: 600px; padding-bottom: var(--card-padding); }
+        .profile-display { text-align: center; padding-bottom: 1rem; }
+        .profile-avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; border: 3px solid var(--border-color); background-color: #f0f0f0; }
+        #profile-name { font-size: 1.5rem; font-weight: 600; margin: 0; }
+        .profile-email { color: var(--text-secondary); }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-primary); }
+        .form-group input { width: 100%; box-sizing: border-box; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--button-radius); font-size: 1rem; }
+        .avatar-selection { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .avatar-option { width: 100%; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color 0.2s; background-color: #f0f0f0; padding: 5px;}
+        .avatar-option.selected { border-color: var(--primary-color); box-shadow: 0 0 10px rgba(255, 69, 0, 0.3); }
+        .save-btn { width: 100%; padding: 0.9rem; border-radius: var(--button-radius); font-size: 1rem; cursor: pointer; border: none; font-weight: 500; background-color: var(--dark-blue); color: white; transition: background-color 0.2s ease; }
+        .save-btn.saved { background-color: #4caf50; }
+        .social-buttons a { display: flex; align-items: center; gap: 10px; padding: 0.75rem; border-radius: var(--button-radius); text-decoration: none; color: white; margin-bottom: 0.5rem; background-color: #555; }
+        .social-buttons .telegram { background-color: #0088cc; }
+        .social-buttons .whatsapp { background-color: #25d366; }
+        .action-button { width: 100%; padding: 0.9rem; border-radius: var(--button-radius); font-size: 1rem; cursor: pointer; border: none; font-weight: 500; }
+        .logout-btn { background-color: var(--dark-blue-gray); color: white; }
+        .delete-account-btn { background-color: #ffebee; color: #c62828; margin-top: 0.5rem; }
+
+        /* --- Navigation Bar --- */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 420px; margin: auto; display: flex; justify-content: space-around; background-color: #fff; border-top: 1px solid #eee; padding: 0.5rem 0; z-index: 100; }
+        .nav-item { text-align: center; color: #999; text-decoration: none; font-size: 0.75rem; }
+        .nav-item.active { color: var(--primary-color); }
+        .nav-icon svg { width: 28px; height: 28px; fill: currentColor; margin-bottom: 2px; }
+
+        /* --- Modal Styles --- */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fff; padding: 1.5rem; border-radius: var(--card-radius); width: 90%; max-width: 380px; }
+        .close-btn { float: right; font-size: 1.5rem; cursor: pointer; }
+        .payment-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .payment-method { width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: var(--button-radius); background-color: #f9f9f9; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .payment-method.selected { background-color: var(--dark-blue); color: white; border-color: var(--dark-blue); }
+        .payment-details { display: none; margin-top: 1.5rem; }
+        .payment-details.show { display: block; }
+        .payment-details input { box-sizing: border-box; width: 100%; padding: 0.8rem; margin-top: 1rem; border: 1px solid #ccc; border-radius: var(--button-radius); font-size: 1rem; }
+        #submit-cash-out { width: 100%; padding: 0.9rem; margin-top: 1rem; background-color: #4caf50; color: #fff; border: none; border-radius: var(--button-radius); cursor: pointer; font-size: 1rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <section id="tasks" class="page active"></section>
+            <section id="wallet" class="page"></section>
+            <section id="account" class="page"></section>
+        </main>
+
+        <!-- Navigation Bar -->
+        <nav class="bottom-nav"></nav>
+    </div>
+
+    <!-- Modal -->
+    <div id="cash-out-modal" class="modal"></div>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- CHECK IF USER IS LOGGED IN ---
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                alert('Please login first');
+                window.location.href = 'a_2.html'; // আপনার প্রথম ফাইলের নাম
+                return;
+            }
+
+            // --- UPDATE PROFILE WITH LOGGED IN USER DATA ---
+            function updateUserProfile() {
+                const profileName = document.getElementById('profile-name');
+                const profileEmail = document.querySelector('.profile-email');
+                const fullNameInput = document.getElementById('full-name');
+                
+                if (profileName) profileName.textContent = currentUser.displayName;
+                if (profileEmail) profileEmail.textContent = currentUser.email;
+                if (fullNameInput) fullNameInput.value = currentUser.displayName;
+            }
+
+            // --- INJECT PAGE CONTENT (Keeps base HTML clean) ---
+            function populateHTML() {
+                document.getElementById('tasks').innerHTML = `
+                    <header class="page-header">
+                        <h2 class="app-title-animated">SURVEYio</h2>
+                        <div class="search-container">
+                            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                            <input type="search" id="task-search-input" placeholder="Search...">
+                        </div>
+                        <span class="balance-display">$0.00</span>
+                    </header>
+                    <div id="task-list" class="task-list"></div>`;
+
+                document.getElementById('wallet').innerHTML = `
+                    <div class="wallet-card">
+                        <div class="wallet-header">
+                            <div class="wallet-chip"></div>
+                            <div id="wallet-status" class="wallet-status">Pending Goal</div>
+                        </div>
+                        <div class="wallet-balance-label">Current Balance</div>
+                        <div id="wallet-balance">$0.00</div>
+                    </div>
+                    <div class="cash-out-section">
+                        <h4>Withdrawal Goal</h4>
+                        <div class="progress-bar-container"><div id="withdrawal-progress" style="width: 0%;"></div></div>
+                        <p class="progress-label">$<span id="balance-for-progress">0.00</span> / $10.00</p>
+                        <button id="cash-out-btn" class="cash-out-btn" disabled>Cash Out</button>
+                    </div>
+                    <div class="activities">
+                        <h3>Activities</h3>
+                        <p id="activities-placeholder">No activities yet.</p>
+                        <ul id="activities-list"></ul>
+                    </div>`;
+
+                document.getElementById('account').innerHTML = `
+                    <div class="profile-display">
+                        <img src="https://i.ibb.co/3k15cSH/man-icon.png" alt="Profile Avatar" id="profile-avatar" class="profile-avatar">
+                        <h2 id="profile-name">${currentUser.displayName}</h2>
+                        <p class="profile-email">${currentUser.email}</p>
+                    </div>
+                    <div class="accordion-card">
+                        <div class="accordion-header"><h4>Edit Profile</h4><span class="arrow-icon">▼</span></div>
+                        <div class="accordion-content">
+                            <div class="form-group"><label for="full-name">Full Name</label><input type="text" id="full-name" value="${currentUser.displayName}"></div>
+                            <div class="form-group"><label for="dob">Date of Birth</label><input type="date" id="dob"></div>
+                            <label>Choose Your Avatar</label>
+                            <div class="avatar-selection">
+                                <img src="https://i.ibb.co/3k15cSH/man-icon.png" class="avatar-option selected" alt="Man Icon">
+                                <img src="https://i.ibb.co/bFqg0Y8/woman-icon.png" class="avatar-option" alt="Woman Icon">
+                                <img src="https://i.ibb.co/L52Xk5H/boy-icon.png" class="avatar-option" alt="Boy Icon">
+                                <img src="https://i.ibb.co/QvYgq31/student-icon.png" class="avatar-option" alt="Student Icon">
+                            </div>
+                            <button id="save-profile-btn" class="save-btn" style="margin-top: 1.5rem;">Save Changes</button>
+                        </div>
+                    </div>
+                    <div class="accordion-card"><div class="accordion-header"><h4>Watch Tutorial</h4><span class="arrow-icon">▼</span></div><div class="accordion-content"><p>New here? Watch our quick start guide to learn how to complete tasks and maximize your earnings.</p><a href="#" target="_blank" class="action-button logout-btn" style="text-align: center; display:block; text-decoration:none;">Watch Now</a></div></div>
+                    <div class="accordion-card"><div class="accordion-header"><h4>Join Official Channel</h4><span class="arrow-icon">▼</span></div><div class="accordion-content social-buttons"><p>Stay updated with the latest tasks, bonus events, and important announcements by joining our channels.</p><a href="#" class="telegram"><span><strong>Join on Telegram</strong></span></a><a href="#" class="whatsapp"><span><strong>Join on WhatsApp</strong></span></a></div></div>
+                    <div class="accordion-card"><div class="accordion-header"><h4>Support & Guidelines</h4><span class="arrow-icon">▼</span></div><div class="accordion-content"><p>Have questions or need help? Contact our support team. Please read the community guidelines to ensure a fair marketplace for everyone.</p><a href="mailto:support@surveyio.com" style="text-decoration:none; color: var(--text-primary);"><strong>Support:</strong> support@surveyio.com</a><hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1rem 0;"><a href="mailto:hmyt217@gmail.com" style="text-decoration:none; color: var(--text-primary);"><strong>Developer:</strong> hmyt217@gmail.com</a></div></div>
+                    <div style="margin-top: 2rem;"><button class="action-button logout-btn">Logout</button><button class="action-button delete-account-btn">Delete Account</button></div>`;
+
+                document.querySelector('.bottom-nav').innerHTML = `
+                    <a href="#tasks" class="nav-item active" data-page="tasks"><div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div><div>Tasks</div></a>
+                    <a href="#wallet" class="nav-item" data-page="wallet"><div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg></div><div>Wallet</div></a>
+                    <a href="#account" class="nav-item" data-page="account"><div class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></div><div>Account</div></a>`;
+
+                document.getElementById('cash-out-modal').innerHTML = `
+                    <div class="modal-content"><span class="close-btn">&times;</span><h3>Select Payment Method</h3><div class="payment-methods"><button class="payment-method" data-placeholder="Enter your Bkash Number">BKASH</button><button class="payment-method" data-placeholder="Enter your Nagad Number">NAGAD</button><button class="payment-method" data-placeholder="Enter your Rocket Number">ROCKET</button><button class="payment-method" data-placeholder="Enter your Binance ID">BINANCE</button><button class="payment-method" data-placeholder="Enter your PayPal Email">PAYPAL</button><button class="payment-method" data-placeholder="Enter your Coinbase Email">COINBASE</button></div><div class="payment-details"><input type="number" id="cash-out-amount" placeholder="Amount"><input type="text" id="cash-out-contact" placeholder=""><button id="submit-cash-out">Submit Request</button></div></div>`;
+            }
+            populateHTML();
+            updateUserProfile();
+
+            // --- STATE & ELEMENT SELECTION ---
+            const pages = document.querySelectorAll(".page");
+            const navItems = document.querySelectorAll(".nav-item");
+            const taskList = document.getElementById("task-list");
+            const searchInput = document.getElementById('task-search-input');
+            const accordions = document.querySelectorAll('.accordion-header');
+            const avatarOptions = document.querySelectorAll('.avatar-option');
+            const mainAvatar = document.getElementById('profile-avatar');
+            const saveProfileBtn = document.getElementById('save-profile-btn');
+            const profileNameDisplay = document.getElementById('profile-name');
+            const fullNameInput = document.getElementById('full-name');
+            const headerBalanceElem = document.querySelector(".balance-display");
+            const walletBalanceElem = document.getElementById("wallet-balance");
+            const cashOutBtn = document.getElementById("cash-out-btn");
+            const activitiesList = document.getElementById("activities-list");
+            const activitiesPlaceholder = document.getElementById("activities-placeholder");
+            const progress = document.getElementById('withdrawal-progress');
+            const progressLabel = document.getElementById('balance-for-progress');
+            const walletStatus = document.getElementById('wallet-status');
+            const cashOutModal = document.getElementById('cash-out-modal');
+
+            let balance = 0.00;
+            const tasks = [
+                { id: 1, title: "Photo Best Practices Guide", price: 10.00, url: "#", status: 'active' },
+                { id: 2, title: "Data Annotation Task", price: 5.00, url: "#", status: 'active' },
+                { id: 3, title: "Survey on Shopping Habits", price: 7.50, url: "#", status: 'active' },
+                { id: 4, title: "Content Review Task", price: 12.00, url: "#", status: 'active' },
+            ];
+
+            // --- EVENT LISTENERS ---
+            navItems.forEach(item => item.addEventListener("click", handleNav));
+            accordions.forEach(header => header.addEventListener('click', toggleAccordion));
+            searchInput.addEventListener('input', (e) => renderTasks(e.target.value));
+            avatarOptions.forEach(option => option.addEventListener('click', selectAvatar));
+            saveProfileBtn.addEventListener('click', saveProfile);
+            cashOutBtn.addEventListener("click", () => { cashOutModal.style.display = "flex"; });
+            cashOutModal.querySelector('.close-btn').addEventListener('click', () => cashOutModal.style.display = 'none');
+            
+            // Cash out payment method selection
+            const paymentMethodBtns = cashOutModal.querySelectorAll('.payment-method');
+            const paymentDetails = cashOutModal.querySelector('.payment-details');
+            const contactInput = cashOutModal.querySelector('#cash-out-contact');
+            paymentMethodBtns.forEach(btn => { 
+                btn.addEventListener('click', () => { 
+                    paymentMethodBtns.forEach(b => b.classList.remove('selected')); 
+                    btn.classList.add('selected'); 
+                    contactInput.placeholder = btn.dataset.placeholder; 
+                    paymentDetails.classList.add('show'); 
+                }); 
+            });
+            
+            cashOutModal.querySelector('#submit-cash-out').addEventListener("click", () => { 
+                const amount = parseFloat(cashOutModal.querySelector("#cash-out-amount").value); 
+                if(isNaN(amount) || amount <= 0 || amount > balance){ 
+                    alert('Invalid Amount'); 
+                    return; 
+                } 
+                balance -= amount; 
+                updateBalanceUI(); 
+                addActivity('Cash Out Request (Pending)', amount, false); 
+                cashOutModal.style.display = 'none'; 
+                alert('Request submitted!'); 
+            });
+
+            // --- LOGOUT FUNCTIONALITY ---
+            function setupLogout() {
+                const logoutBtn = document.querySelector('.logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => {
+                        localStorage.removeItem('currentUser');
+                        window.location.href = 'a_2.html';
+                    });
+                }
+            }
+
+            // --- FUNCTIONS ---
+            function handleNav(e) { 
+                e.preventDefault(); 
+                const pageId = e.currentTarget.dataset.page; 
+                pages.forEach(page => page.classList.remove("active")); 
+                document.getElementById(pageId).classList.add("active"); 
+                navItems.forEach(nav => nav.classList.remove("active")); 
+                e.currentTarget.classList.add("active"); 
+            }
+            
+            function toggleAccordion(e) { 
+                const header = e.currentTarget; 
+                const content = header.nextElementSibling; 
+                header.classList.toggle('active'); 
+                content.classList.toggle('show'); 
+            }
+            
+            function selectAvatar(e) { 
+                avatarOptions.forEach(opt => opt.classList.remove('selected')); 
+                e.currentTarget.classList.add('selected'); 
+                mainAvatar.src = e.currentTarget.src; 
+            }
+            
+            function saveProfile() { 
+                const newName = fullNameInput.value; 
+                profileNameDisplay.textContent = newName; 
+                
+                // Update localStorage with new name
+                currentUser.displayName = newName;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                
+                saveProfileBtn.textContent = 'Saved!'; 
+                saveProfileBtn.classList.add('saved'); 
+                setTimeout(() => { 
+                    saveProfileBtn.textContent = 'Save Changes'; 
+                    saveProfileBtn.classList.remove('saved'); 
+                }, 2000); 
+            }
+
+            function renderTasks(filter = '') {
+                const searchTerm = filter.toLowerCase();
+                const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchTerm));
+                taskList.innerHTML = "";
+                if (filteredTasks.length === 0) { 
+                    taskList.innerHTML = `<div id="no-tasks-found">No tasks found matching "${filter}".</div>`; 
+                    return; 
+                }
+                filteredTasks.forEach(task => {
+                    const card = document.createElement("div"); 
+                    card.className = `task-card ${task.status === 'completed' ? 'completed' : ''}`; 
+                    card.dataset.taskId = task.id; 
+                    let footerContent; 
+                    if (task.status === 'active') { 
+                        footerContent = `<span class="task-timer-status">Tap to start (1:00)</span>`; 
+                    } else if (task.status === 'pending_submit') { 
+                        footerContent = `<div class="task-submission-box"><input type="url" placeholder="Paste completed task URL here"><button>Submit & Earn</button></div>`; 
+                    } else { 
+                        footerContent = `<span class="task-timer-status" style="color: green;">✓ Completed</span>`; 
+                    } 
+                    card.innerHTML = `<div class="task-card-header"><h3>$${task.price.toFixed(2)}</h3></div><h4 class="task-title">${task.title}</h4><div class="task-card-footer">${footerContent}</div>`; 
+                    taskList.appendChild(card); 
+                    if (task.status === 'active') { 
+                        card.addEventListener('click', () => startTaskTimer(card, task), { once: true }); 
+                    } 
+                    if (task.status === 'pending_submit') { 
+                        card.querySelector('.task-submission-box button').addEventListener('click', () => submitTask(card, task)); 
+                    }
+                });
+            }
+            
+            function startTaskTimer(card, task) { 
+                window.open(task.url, "_blank"); 
+                let timeLeft = 60; 
+                const timerElem = card.querySelector(".task-timer-status"); 
+                timerElem.style.color = 'var(--primary-color)'; 
+                const interval = setInterval(() => { 
+                    timeLeft--; 
+                    timerElem.textContent = `Time left: 0:${timeLeft < 10 ? '0' : ''}${timeLeft}`; 
+                    if (timeLeft <= 0) { 
+                        clearInterval(interval); 
+                        timerElem.textContent = "Time's up!"; 
+                        task.status = 'pending_submit'; 
+                        renderTasks(); 
+                    } 
+                }, 1000); 
+            }
+            
+            function submitTask(card, task) { 
+                const urlInput = card.querySelector('.task-submission-box input'); 
+                if (!urlInput.value.trim()) { 
+                    alert('Please paste the URL to submit.'); 
+                    return; 
+                } 
+                task.status = 'completed'; 
+                balance += task.price; 
+                updateBalanceUI(); 
+                showEarnedPopup(task.price); 
+                addActivity(`Completed: ${task.title}`, task.price, true); 
+                renderTasks(); 
+            }
+            
+            function updateBalanceUI() { 
+                const formattedBalance = `$${balance.toFixed(2)}`; 
+                walletBalanceElem.textContent = formattedBalance; 
+                headerBalanceElem.textContent = formattedBalance; 
+                const progressPercentage = Math.min((balance / 10) * 100, 100); 
+                progress.style.width = `${progressPercentage}%`; 
+                progressLabel.textContent = balance.toFixed(2); 
+                cashOutBtn.disabled = balance < 10; 
+                if (balance >= 10) { 
+                    walletStatus.textContent = 'Active'; 
+                    walletStatus.classList.add('active'); 
+                } else { 
+                    walletStatus.textContent = 'Pending Goal'; 
+                    walletStatus.classList.remove('active'); 
+                } 
+            }
+            
+            function showEarnedPopup(amount) { 
+                const popup = document.createElement('div'); 
+                popup.textContent = `You Earned $${amount.toFixed(2)}`; 
+                Object.assign(popup.style, { 
+                    position: 'fixed', 
+                    top: '20px', 
+                    left: '50%', 
+                    transform: 'translateX(-50%)', 
+                    backgroundColor: '#4caf50', 
+                    color: 'white', 
+                    padding: '15px 25px', 
+                    borderRadius: '10px', 
+                    zIndex: '2000', 
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.2)' 
+                }); 
+                document.body.appendChild(popup); 
+                setTimeout(() => popup.remove(), 3000); 
+            }
+            
+            function addActivity(description, amount, isPositive) { 
+                activitiesPlaceholder.style.display = "none"; 
+                const li = document.createElement("li"); 
+                li.className = 'activity-item'; 
+                const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); 
+                li.innerHTML = `<div class="activity-details"><p>${description}</p><p class="activity-time">${new Date().toLocaleDateString()} at ${time}</p></div><span class="activity-amount ${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : '-'}$${Math.abs(amount).toFixed(2)}</span>`; 
+                activitiesList.prepend(li); 
+            }
+
+            // --- Initial Load ---
+            renderTasks();
+            updateBalanceUI();
+            setupLogout();
+        });
+    </script>
+</body>
+</html>
